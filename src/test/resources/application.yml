@@ -1,0 +1,6 @@
+# All automated tests default to the H2-backed test profile.
+spring:
+  profiles:
+    active: test
+  jpa:
+    open-in-view: false

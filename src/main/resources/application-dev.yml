@@ -1,0 +1,10 @@
+# Local development against the PostgreSQL cluster installed via mise
+# (scripts/setup-dev.sh). Local trust authentication; role name = OS user.
+spring:
+  datasource:
+    url: jdbc:postgresql://${WALLET_PG_HOST:localhost}:${WALLET_PG_PORT:5432}/wallet_ledger
+    username: ${USER:postgres}
+    password: ""
+  flyway:
+    enabled: true
+    locations: classpath:db/migration

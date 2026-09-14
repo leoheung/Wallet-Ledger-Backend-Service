@@ -1,0 +1,11 @@
+# Run against docker-compose.yml middleware:
+#   docker compose up -d
+#   mvn spring-boot:run -Dspring-boot.run.profiles=docker
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/wallet_ledger
+    username: postgres
+    password: postgres
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
