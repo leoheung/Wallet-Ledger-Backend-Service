@@ -1,16 +1,19 @@
-# Run against docker-compose.yml middleware:
-#   docker compose up -d
-#   mvn spring-boot:run -Dspring-boot.run.profiles=docker
+# Run inside the docker-compose.yml network.
+#
+#   docker compose up --build
+#
+# Hosts are the compose service names (postgres/redis); they can be overridden
+# with WALLET_PG_HOST / WALLET_REDIS_HOST so the same profile also works when
+# the app is launched from the host against the published ports.
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/wallet_ledger
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://${WALLET_PG_HOST:postgres}:${WALLET_PG_PORT:5432}/wallet_ledger
+    username: ${WALLET_PG_USER:postgres}
+    password: ${WALLET_PG_PASSWORD:postgres}
   flyway:
     enabled: true
     locations: classpath:db/migration
   data:
     redis:
-      # The redis service in docker-compose.yml is published on host port 6379.
-      host: ${WALLET_REDIS_HOST:localhost}
+      host: ${WALLET_REDIS_HOST:redis}
       port: ${WALLET_REDIS_PORT:6379}

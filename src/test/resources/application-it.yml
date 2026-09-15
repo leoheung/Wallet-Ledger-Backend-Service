@@ -5,8 +5,11 @@
 spring:
   datasource:
     url: jdbc:postgresql://${WALLET_PG_HOST:localhost}:${WALLET_PG_PORT:5432}/wallet_ledger_test
-    username: ${USER:postgres}
-    password: ""
+    # Local setup (scripts/setup-dev.sh) uses trust auth with the OS user;
+    # against docker-compose middleware use:
+    #   WALLET_PG_USER=postgres WALLET_PG_PASSWORD=postgres ./mvnw verify -Pit
+    username: ${WALLET_PG_USER:${USER:postgres}}
+    password: ${WALLET_PG_PASSWORD:}
   jpa:
     hibernate:
       ddl-auto: validate

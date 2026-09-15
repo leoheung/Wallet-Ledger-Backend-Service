@@ -1,0 +1,18 @@
+# Build context: keep it small and never copy secret/private files.
+target/
+.git/
+.gitignore
+.trae/
+cheatsheet.md
+AI_Engineer_Takehome.md
+*.md~
+*.log
+.idea/
+.vscode/
+*.iml
+.settings/
+.project
+.classpath
+HELP.md
+scripts/
+docker/
