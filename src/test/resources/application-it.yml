@@ -1,0 +1,15 @@
+# Integration tests against real PostgreSQL 16 (mvn verify -Pit).
+# Requires scripts/setup-dev.sh to have created wallet_ledger_test.
+spring:
+  datasource:
+    url: jdbc:postgresql://${WALLET_PG_HOST:localhost}:${WALLET_PG_PORT:5432}/wallet_ledger_test
+    username: ${USER:postgres}
+    password: ""
+    hikari:
+      maximum-pool-size: 120
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration

@@ -9,6 +9,9 @@ spring:
       ddl-auto: validate
 
 server:
+  # Explicitly listen on all interfaces so the API and Swagger UI are
+  # reachable from other machines on the dev network.
+  address: ${SERVER_ADDRESS:0.0.0.0}
   port: ${SERVER_PORT:8080}
 
 management:

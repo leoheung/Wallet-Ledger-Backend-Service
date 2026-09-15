@@ -113,6 +113,10 @@
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
+                            <!-- application-it.yml points at the real PostgreSQL test DB -->
+                            <systemPropertyVariables>
+                                <spring.profiles.active>it</spring.profiles.active>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>
