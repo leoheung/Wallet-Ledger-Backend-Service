@@ -73,12 +73,42 @@ app_pid_alive() {
   [ -f "$APP_PID_FILE" ] && kill -0 "$(cat "$APP_PID_FILE")" 2>/dev/null
 }
 
-if app_pid_alive && curl -sf --max-time 2 "http://localhost:$APP_PORT/actuator/health" >/dev/null 2>&1; then
+app_healthy() {
+  for _ in $(seq 1 5); do
+    curl -sf --max-time 2 "http://localhost:$APP_PORT/actuator/health" >/dev/null 2>&1 && return 0
+    sleep 1
+  done
+  return 1
+}
+
+if app_pid_alive && app_healthy; then
   echo "[start] Wallet Ledger app already running on port $APP_PORT (pid $(cat "$APP_PID_FILE"))"
 else
+  # A live process that fails health checks holds the port; stop it first.
+  if app_pid_alive; then
+    STALE_PID="$(cat "$APP_PID_FILE")"
+    echo "[start] Existing app (pid $STALE_PID) is unhealthy; stopping it"
+    kill "$STALE_PID" 2>/dev/null || true
+    for _ in $(seq 1 20); do kill -0 "$STALE_PID" 2>/dev/null || break; sleep 1; done
+    kill -9 "$STALE_PID" 2>/dev/null || true
+    rm -f "$APP_PID_FILE"
+  fi
+
   if [ "${REBUILD:-0}" = "1" ] || [ ! -f "$APP_JAR" ]; then
     echo "[start] Building application jar (./mvnw package -DskipTests)"
     (cd "$PROJECT_DIR" && ./mvnw -q "${MVN_REPO_ARG[@]}" package -DskipTests)
+  fi
+
+  # Guard against a corrupted jar on synced/network filesystems (the fat jar
+  # can occasionally be written incompletely); rebuild once if it fails.
+  if ! unzip -t "$APP_JAR" >/dev/null 2>&1; then
+    echo "[start] Packaged jar failed integrity check; rebuilding once"
+    (cd "$PROJECT_DIR" && ./mvnw -q "${MVN_REPO_ARG[@]}" clean package -DskipTests)
+    sync
+    unzip -t "$APP_JAR" >/dev/null 2>&1 || {
+      echo "[start] Application jar is still corrupt after rebuild: $APP_JAR" >&2
+      exit 1
+    }
   fi
 
   echo "[start] Starting Wallet Ledger app on $SERVER_ADDRESS:$APP_PORT (profile=dev)"

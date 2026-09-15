@@ -9,3 +9,8 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  data:
+    redis:
+      # The redis service in docker-compose.yml is published on host port 6379.
+      host: ${WALLET_REDIS_HOST:localhost}
+      port: ${WALLET_REDIS_PORT:6379}

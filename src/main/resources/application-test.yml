@@ -12,3 +12,13 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+# Unit tests require zero external infrastructure: caching is disabled
+# (no Redis connections at all) and the Redis health indicator is off.
+wallet:
+  cache:
+    enabled: false
+management:
+  health:
+    redis:
+      enabled: false

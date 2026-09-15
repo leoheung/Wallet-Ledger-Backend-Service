@@ -26,6 +26,10 @@ class ConcurrentDebitIT extends AbstractPgIT {
         // Seed 500.00
         walletAppService.credit(playerId, "USD", new BigDecimal("500.00"),
                 TransactionReason.ADMIN_ADJUSTMENT, null, "seed");
+        // Warm the cache to the pre-storm balance (500.00). The storm's commits
+        // must evict it, otherwise the post-storm read would serve a stale 500.00.
+        assertThat(walletQueryService.getBalanceView(playerId).balanceMinor()).isEqualTo(50_000L);
+        assertThat(redis.hasKey(balanceKey(playerId))).isTrue();
 
         int threads = 60;
         List<OperationOutcome> outcomes = StressHarness.runConcurrently(threads, index -> {
@@ -54,6 +58,13 @@ class ConcurrentDebitIT extends AbstractPgIT {
 
         Wallet after = walletAppService.getWallet(playerId);
         assertThat(after.getBalance()).as("balance never goes negative, ends at zero").isZero();
+
+        // The last committed debit evicted the stale 500.00 entry; the read
+        // misses, loads 0 from the DB and must never return the stale value.
+        assertThat(walletQueryService.getBalanceView(playerId).balanceMinor())
+                .as("balance read through the Redis cache path matches DB truth")
+                .isEqualTo(after.getBalance())
+                .isZero();
 
         // Seed transaction + 50 successful debits; rejected requests wrote nothing.
         assertThat(transactionRepository.countByWalletId(wallet.getId())).isEqualTo(51);

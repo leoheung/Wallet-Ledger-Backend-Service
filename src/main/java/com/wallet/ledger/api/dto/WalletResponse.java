@@ -1,5 +1,6 @@
 package com.wallet.ledger.api.dto;
 
+import com.wallet.ledger.application.BalanceView;
 import com.wallet.ledger.application.Money;
 import com.wallet.ledger.domain.model.Wallet;
 
@@ -16,5 +17,13 @@ public record WalletResponse(Long playerId,
                 wallet.getId(),
                 wallet.getCurrencyCode(),
                 Money.toMajorUnits(wallet.getBalance(), wallet.getCurrencyCode()));
+    }
+
+    public static WalletResponse from(BalanceView view) {
+        return new WalletResponse(
+                view.playerId(),
+                view.walletId(),
+                view.currencyCode(),
+                Money.toMajorUnits(view.balanceMinor(), view.currencyCode()));
     }
 }

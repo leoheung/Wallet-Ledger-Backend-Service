@@ -5,9 +5,10 @@ import com.wallet.ledger.api.dto.TransactionResponse;
 import com.wallet.ledger.api.dto.WalletOperationRequest;
 import com.wallet.ledger.api.dto.WalletOperationResponse;
 import com.wallet.ledger.api.dto.WalletResponse;
+import com.wallet.ledger.application.BalanceView;
 import com.wallet.ledger.application.LedgerOperationResult;
 import com.wallet.ledger.application.WalletAppService;
-import com.wallet.ledger.domain.model.Wallet;
+import com.wallet.ledger.application.WalletQueryService;
 import com.wallet.ledger.domain.model.WalletTransaction;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,16 +37,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class WalletController {
 
     private final WalletAppService walletAppService;
+    private final WalletQueryService walletQueryService;
 
-    public WalletController(WalletAppService walletAppService) {
+    public WalletController(WalletAppService walletAppService,
+                            WalletQueryService walletQueryService) {
         this.walletAppService = walletAppService;
+        this.walletQueryService = walletQueryService;
     }
 
     @GetMapping
-    @Operation(summary = "Get the current wallet balance")
+    @Operation(summary = "Get the current wallet balance (Redis cache-aside)")
     public WalletResponse getWallet(@PathVariable Long playerId) {
-        Wallet wallet = walletAppService.getWallet(playerId);
-        return WalletResponse.from(playerId, wallet);
+        BalanceView view = walletQueryService.getBalanceView(playerId);
+        return WalletResponse.from(view);
     }
 
     @PostMapping("/credit")

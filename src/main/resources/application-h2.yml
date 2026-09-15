@@ -9,3 +9,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+# Zero-install profile: no Redis needed.
+wallet:
+  cache:
+    enabled: false
+management:
+  health:
+    redis:
+      enabled: false

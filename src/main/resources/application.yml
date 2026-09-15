@@ -7,6 +7,20 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+  data:
+    redis:
+      host: ${WALLET_REDIS_HOST:localhost}
+      port: ${WALLET_REDIS_PORT:6379}
+      database: ${WALLET_REDIS_DB:0}
+      # Short timeout: a slow/down Redis must never noticeably stall balance reads
+      # because the query service always falls back to PostgreSQL.
+      timeout: 200ms
+
+wallet:
+  cache:
+    enabled: ${WALLET_BALANCE_CACHE_ENABLED:true}
+    # TTL is the independent last line of defence if post-commit eviction is lost.
+    balance-ttl-seconds: ${WALLET_BALANCE_CACHE_TTL:30}
 
 server:
   # Explicitly listen on all interfaces so the API and Swagger UI are
@@ -18,7 +32,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
   endpoint:
     health:
       show-details: when_authorized

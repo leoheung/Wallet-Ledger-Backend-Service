@@ -1,15 +1,26 @@
 # Integration tests against real PostgreSQL 16 (mvn verify -Pit).
 # Requires scripts/setup-dev.sh to have created wallet_ledger_test.
+# Redis: dedicated logical DB 15 so IT data never touches the dev DB 0;
+# each test flushes it before execution.
 spring:
   datasource:
     url: jdbc:postgresql://${WALLET_PG_HOST:localhost}:${WALLET_PG_PORT:5432}/wallet_ledger_test
     username: ${USER:postgres}
     password: ""
-    hikari:
-      maximum-pool-size: 120
   jpa:
     hibernate:
       ddl-auto: validate
   flyway:
     enabled: true
     locations: classpath:db/migration
+  data:
+    redis:
+      host: ${WALLET_REDIS_HOST:localhost}
+      port: ${WALLET_REDIS_PORT:6379}
+      database: 15
+      timeout: 500ms
+
+wallet:
+  cache:
+    enabled: true
+    balance-ttl-seconds: 30
