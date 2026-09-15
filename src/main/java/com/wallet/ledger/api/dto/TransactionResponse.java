@@ -18,7 +18,9 @@ public record TransactionResponse(Long transactionId,
                                   String currencyCode,
                                   BigDecimal amount,
                                   BigDecimal balanceAfter,
-                                  OffsetDateTime createdAt) {
+                                  OffsetDateTime createdAt,
+                                  Long relatedTransactionId,
+                                  Long originalTransactionId) {
 
     public static TransactionResponse from(WalletTransaction txn) {
         return new TransactionResponse(
@@ -30,6 +32,8 @@ public record TransactionResponse(Long transactionId,
                 txn.getCurrencyCode(),
                 Money.toMajorUnits(txn.getAmount(), txn.getCurrencyCode()),
                 Money.toMajorUnits(txn.getBalanceAfter(), txn.getCurrencyCode()),
-                txn.getCreatedAt().withOffsetSameInstant(ZoneOffset.UTC));
+                txn.getCreatedAt().withOffsetSameInstant(ZoneOffset.UTC),
+                txn.getRelatedTransactionId(),
+                txn.getOriginalTransactionId());
     }
 }

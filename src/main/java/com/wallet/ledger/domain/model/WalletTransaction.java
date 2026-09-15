@@ -60,6 +60,14 @@ public class WalletTransaction {
     @Column(name = "balance_after", nullable = false)
     private long balanceAfter;
 
+    /** Counterparty leg of a player-to-player transfer; null otherwise. */
+    @Column(name = "related_transaction_id")
+    private Long relatedTransactionId;
+
+    /** Original transaction reversed by this refund leg; null otherwise. */
+    @Column(name = "original_transaction_id")
+    private Long originalTransactionId;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -78,6 +86,23 @@ public class WalletTransaction {
                              String idempotencyKey,
                              String requestHash,
                              long balanceAfter) {
+        this(wallet, type, status, reason, referenceId, amount, currencyCode,
+                idempotencyKey, requestHash, balanceAfter, null, null);
+    }
+
+    /** Full constructor for transfer legs (relatedTransactionId) and refunds (originalTransactionId). */
+    public WalletTransaction(Wallet wallet,
+                             TransactionType type,
+                             TransactionStatus status,
+                             TransactionReason reason,
+                             String referenceId,
+                             long amount,
+                             String currencyCode,
+                             String idempotencyKey,
+                             String requestHash,
+                             long balanceAfter,
+                             Long relatedTransactionId,
+                             Long originalTransactionId) {
         this.wallet = wallet;
         this.type = type;
         this.status = status;
@@ -88,6 +113,13 @@ public class WalletTransaction {
         this.idempotencyKey = idempotencyKey;
         this.requestHash = requestHash;
         this.balanceAfter = balanceAfter;
+        this.relatedTransactionId = relatedTransactionId;
+        this.originalTransactionId = originalTransactionId;
+    }
+
+    /** Used to cross-link the two legs of a transfer after both ids are known. */
+    public void linkCounterparty(Long counterpartyTransactionId) {
+        this.relatedTransactionId = counterpartyTransactionId;
     }
 
     public Long getId() {
@@ -132,6 +164,14 @@ public class WalletTransaction {
 
     public long getBalanceAfter() {
         return balanceAfter;
+    }
+
+    public Long getRelatedTransactionId() {
+        return relatedTransactionId;
+    }
+
+    public Long getOriginalTransactionId() {
+        return originalTransactionId;
     }
 
     public OffsetDateTime getCreatedAt() {

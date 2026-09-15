@@ -8,5 +8,7 @@ public enum TransactionReason {
     MISSION_REWARD,
     PURCHASE,
     ADMIN_ADJUSTMENT,
+    PLAYER_TRANSFER,
+    REFUND,
     OTHER
 }

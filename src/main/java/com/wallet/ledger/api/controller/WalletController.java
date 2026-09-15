@@ -2,11 +2,14 @@ package com.wallet.ledger.api.controller;
 
 import com.wallet.ledger.api.dto.PagedResponse;
 import com.wallet.ledger.api.dto.TransactionResponse;
+import com.wallet.ledger.api.dto.TransferRequest;
+import com.wallet.ledger.api.dto.TransferResponse;
 import com.wallet.ledger.api.dto.WalletOperationRequest;
 import com.wallet.ledger.api.dto.WalletOperationResponse;
 import com.wallet.ledger.api.dto.WalletResponse;
 import com.wallet.ledger.application.BalanceView;
 import com.wallet.ledger.application.LedgerOperationResult;
+import com.wallet.ledger.application.TransferResult;
 import com.wallet.ledger.application.WalletAppService;
 import com.wallet.ledger.application.WalletQueryService;
 import com.wallet.ledger.domain.model.WalletTransaction;
@@ -77,6 +80,32 @@ public class WalletController {
         LedgerOperationResult result = walletAppService.debit(
                 playerId, request.currencyCode(), request.amount(), request.reason(),
                 request.referenceId(), idempotencyKey);
+        return WalletOperationResponse.from(result);
+    }
+
+    @PostMapping("/transfer")
+    @Operation(summary = "Transfer currency to another player (atomic, deadlock-safe)",
+            parameters = @Parameter(name = "Idempotency-Key", required = true,
+                    description = "Client-generated unique key; retries with the same key apply only once"))
+    public TransferResponse transfer(
+            @PathVariable Long playerId,
+            @RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKey,
+            @Valid @RequestBody TransferRequest request) {
+        TransferResult result = walletAppService.transfer(
+                playerId, request.toPlayerId(), request.currencyCode(), request.amount(),
+                request.referenceId(), idempotencyKey);
+        return TransferResponse.from(playerId, request.toPlayerId(), result);
+    }
+
+    @PostMapping("/transactions/{transactionId}/refund")
+    @Operation(summary = "Fully reverse a previous credit/debit transaction; only one refund allowed",
+            parameters = @Parameter(name = "Idempotency-Key", required = true,
+                    description = "Client-generated unique key; retries with the same key apply only once"))
+    public WalletOperationResponse refund(
+            @PathVariable Long playerId,
+            @PathVariable Long transactionId,
+            @RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKey) {
+        LedgerOperationResult result = walletAppService.refund(playerId, transactionId, idempotencyKey);
         return WalletOperationResponse.from(result);
     }
 

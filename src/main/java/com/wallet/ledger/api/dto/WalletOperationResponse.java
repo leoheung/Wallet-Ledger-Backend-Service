@@ -21,7 +21,9 @@ public record WalletOperationResponse(Long transactionId,
                                       BigDecimal amount,
                                       BigDecimal balanceAfter,
                                       boolean replayed,
-                                      OffsetDateTime createdAt) {
+                                      OffsetDateTime createdAt,
+                                      Long relatedTransactionId,
+                                      Long originalTransactionId) {
 
     public static WalletOperationResponse from(LedgerOperationResult result) {
         WalletTransaction txn = result.transaction();
@@ -36,6 +38,8 @@ public record WalletOperationResponse(Long transactionId,
                 Money.toMajorUnits(txn.getAmount(), txn.getCurrencyCode()),
                 Money.toMajorUnits(txn.getBalanceAfter(), txn.getCurrencyCode()),
                 result.replayed(),
-                txn.getCreatedAt().withOffsetSameInstant(ZoneOffset.UTC));
+                txn.getCreatedAt().withOffsetSameInstant(ZoneOffset.UTC),
+                txn.getRelatedTransactionId(),
+                txn.getOriginalTransactionId());
     }
 }

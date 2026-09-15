@@ -11,6 +11,10 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     Optional<WalletTransaction> findByWalletIdAndIdempotencyKey(Long walletId, String idempotencyKey);
 
+    Optional<WalletTransaction> findByIdAndWalletId(Long id, Long walletId);
+
+    boolean existsByOriginalTransactionId(Long originalTransactionId);
+
     long countByWalletId(Long walletId);
 
     Page<WalletTransaction> findByWalletIdOrderByCreatedAtDescIdDesc(Long walletId, Pageable pageable);
